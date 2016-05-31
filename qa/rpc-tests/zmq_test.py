@@ -7,7 +7,7 @@
 # Test ZMQ interface
 #
 
-from test_framework.test_framework import BitcoinTestFramework
+from test_framework.test_framework import InfinitumTestFramework
 from test_framework.util import *
 import zmq
 import struct
@@ -15,7 +15,7 @@ import struct
 import http.client
 import urllib.parse
 
-class ZMQTest (BitcoinTestFramework):
+class ZMQTest (InfinitumTestFramework):
 
     def __init__(self):
         super().__init__()

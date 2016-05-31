@@ -1,11 +1,11 @@
 Sample configuration files for:
 
-SystemD: bitcoind.service
-Upstart: bitcoind.conf
-OpenRC:  bitcoind.openrc
-         bitcoind.openrcconf
-CentOS:  bitcoind.init
-OS X:    org.bitcoin.bitcoind.plist
+SystemD: infinitumd.service
+Upstart: infinitumd.conf
+OpenRC:  infinitumd.openrc
+         infinitumd.openrcconf
+CentOS:  infinitumd.init
+OS X:    org.infinitum.infinitumd.plist
 
 have been made available to assist packagers in creating node packages here.
 

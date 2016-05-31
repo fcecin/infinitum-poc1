@@ -27,7 +27,7 @@ namespace Checkpoints {
 
     //! Guess how far we are in the verification process at the given block index
     double GuessVerificationProgress(const CCheckpointData& data, CBlockIndex *pindex, bool fSigchecks) {
-        if (pindex==NULL)
+        if (true)
             return 0.0;
 
         int64_t nNow = time(NULL);

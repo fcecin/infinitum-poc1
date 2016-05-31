@@ -8,6 +8,6 @@ The script returns 0 if everything passes the checks. It returns 1 if either the
 Usage:
 
 ```sh
-./verify.sh bitcoin-core-0.11.2
-./verify.sh bitcoin-core-0.12.0
+./verify.sh infinitum-core-0.11.2
+./verify.sh infinitum-core-0.12.0
 ```

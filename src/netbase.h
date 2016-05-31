@@ -2,11 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_NETBASE_H
-#define BITCOIN_NETBASE_H
+#ifndef INFINITUM_NETBASE_H
+#define INFINITUM_NETBASE_H
 
 #if defined(HAVE_CONFIG_H)
-#include "config/bitcoin-config.h"
+#include "config/infinitum-config.h"
 #endif
 
 #include "compat.h"
@@ -223,4 +223,4 @@ bool SetSocketNonBlocking(SOCKET& hSocket, bool fNonBlocking);
  */
 struct timeval MillisToTimeval(int64_t nTimeout);
 
-#endif // BITCOIN_NETBASE_H
+#endif // INFINITUM_NETBASE_H

@@ -7,10 +7,10 @@
 # Test -alertnotify 
 #
 
-from test_framework.test_framework import BitcoinTestFramework
+from test_framework.test_framework import InfinitumTestFramework
 from test_framework.util import *
 
-class ForkNotifyTest(BitcoinTestFramework):
+class ForkNotifyTest(InfinitumTestFramework):
 
     def __init__(self):
         super().__init__()

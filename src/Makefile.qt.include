@@ -1,85 +1,85 @@
-bin_PROGRAMS += qt/bitcoin-qt
-EXTRA_LIBRARIES += qt/libbitcoinqt.a
+bin_PROGRAMS += qt/infinitum-qt
+EXTRA_LIBRARIES += qt/libinfinitumqt.a
 
-# bitcoin qt core #
+# infinitum qt core #
 QT_TS = \
-  qt/locale/bitcoin_af_ZA.ts \
-  qt/locale/bitcoin_ar.ts \
-  qt/locale/bitcoin_be_BY.ts \
-  qt/locale/bitcoin_bg_BG.ts \
-  qt/locale/bitcoin_bg.ts \
-  qt/locale/bitcoin_bs.ts \
-  qt/locale/bitcoin_ca_ES.ts \
-  qt/locale/bitcoin_ca.ts \
-  qt/locale/bitcoin_ca@valencia.ts \
-  qt/locale/bitcoin_cs_CZ.ts \
-  qt/locale/bitcoin_cs.ts \
-  qt/locale/bitcoin_cy.ts \
-  qt/locale/bitcoin_da.ts \
-  qt/locale/bitcoin_de.ts \
-  qt/locale/bitcoin_el_GR.ts \
-  qt/locale/bitcoin_el.ts \
-  qt/locale/bitcoin_en_GB.ts \
-  qt/locale/bitcoin_en.ts \
-  qt/locale/bitcoin_eo.ts \
-  qt/locale/bitcoin_es_CL.ts \
-  qt/locale/bitcoin_es_DO.ts \
-  qt/locale/bitcoin_es_ES.ts \
-  qt/locale/bitcoin_es_MX.ts \
-  qt/locale/bitcoin_es.ts \
-  qt/locale/bitcoin_es_UY.ts \
-  qt/locale/bitcoin_es_VE.ts \
-  qt/locale/bitcoin_et.ts \
-  qt/locale/bitcoin_eu_ES.ts \
-  qt/locale/bitcoin_fa_IR.ts \
-  qt/locale/bitcoin_fa.ts \
-  qt/locale/bitcoin_fi.ts \
-  qt/locale/bitcoin_fr_CA.ts \
-  qt/locale/bitcoin_fr_FR.ts \
-  qt/locale/bitcoin_fr.ts \
-  qt/locale/bitcoin_gl.ts \
-  qt/locale/bitcoin_he.ts \
-  qt/locale/bitcoin_hi_IN.ts \
-  qt/locale/bitcoin_hr.ts \
-  qt/locale/bitcoin_hu.ts \
-  qt/locale/bitcoin_id_ID.ts \
-  qt/locale/bitcoin_it.ts \
-  qt/locale/bitcoin_ja.ts \
-  qt/locale/bitcoin_ka.ts \
-  qt/locale/bitcoin_kk_KZ.ts \
-  qt/locale/bitcoin_ko_KR.ts \
-  qt/locale/bitcoin_ky.ts \
-  qt/locale/bitcoin_la.ts \
-  qt/locale/bitcoin_lt.ts \
-  qt/locale/bitcoin_lv_LV.ts \
-  qt/locale/bitcoin_mk_MK.ts \
-  qt/locale/bitcoin_mn.ts \
-  qt/locale/bitcoin_ms_MY.ts \
-  qt/locale/bitcoin_nb.ts \
-  qt/locale/bitcoin_nl.ts \
-  qt/locale/bitcoin_pam.ts \
-  qt/locale/bitcoin_pl.ts \
-  qt/locale/bitcoin_pt_BR.ts \
-  qt/locale/bitcoin_pt_PT.ts \
-  qt/locale/bitcoin_ro_RO.ts \
-  qt/locale/bitcoin_ru_RU.ts \
-  qt/locale/bitcoin_ru.ts \
-  qt/locale/bitcoin_sk.ts \
-  qt/locale/bitcoin_sl_SI.ts \
-  qt/locale/bitcoin_sq.ts \
-  qt/locale/bitcoin_sr.ts \
-  qt/locale/bitcoin_sv.ts \
-  qt/locale/bitcoin_th_TH.ts \
-  qt/locale/bitcoin_tr_TR.ts \
-  qt/locale/bitcoin_tr.ts \
-  qt/locale/bitcoin_uk.ts \
-  qt/locale/bitcoin_ur_PK.ts \
-  qt/locale/bitcoin_uz@Cyrl.ts \
-  qt/locale/bitcoin_vi.ts \
-  qt/locale/bitcoin_vi_VN.ts \
-  qt/locale/bitcoin_zh_CN.ts \
-  qt/locale/bitcoin_zh.ts \
-  qt/locale/bitcoin_zh_TW.ts
+  qt/locale/infinitum_af_ZA.ts \
+  qt/locale/infinitum_ar.ts \
+  qt/locale/infinitum_be_BY.ts \
+  qt/locale/infinitum_bg_BG.ts \
+  qt/locale/infinitum_bg.ts \
+  qt/locale/infinitum_bs.ts \
+  qt/locale/infinitum_ca_ES.ts \
+  qt/locale/infinitum_ca.ts \
+  qt/locale/infinitum_ca@valencia.ts \
+  qt/locale/infinitum_cs_CZ.ts \
+  qt/locale/infinitum_cs.ts \
+  qt/locale/infinitum_cy.ts \
+  qt/locale/infinitum_da.ts \
+  qt/locale/infinitum_de.ts \
+  qt/locale/infinitum_el_GR.ts \
+  qt/locale/infinitum_el.ts \
+  qt/locale/infinitum_en_GB.ts \
+  qt/locale/infinitum_en.ts \
+  qt/locale/infinitum_eo.ts \
+  qt/locale/infinitum_es_CL.ts \
+  qt/locale/infinitum_es_DO.ts \
+  qt/locale/infinitum_es_ES.ts \
+  qt/locale/infinitum_es_MX.ts \
+  qt/locale/infinitum_es.ts \
+  qt/locale/infinitum_es_UY.ts \
+  qt/locale/infinitum_es_VE.ts \
+  qt/locale/infinitum_et.ts \
+  qt/locale/infinitum_eu_ES.ts \
+  qt/locale/infinitum_fa_IR.ts \
+  qt/locale/infinitum_fa.ts \
+  qt/locale/infinitum_fi.ts \
+  qt/locale/infinitum_fr_CA.ts \
+  qt/locale/infinitum_fr_FR.ts \
+  qt/locale/infinitum_fr.ts \
+  qt/locale/infinitum_gl.ts \
+  qt/locale/infinitum_he.ts \
+  qt/locale/infinitum_hi_IN.ts \
+  qt/locale/infinitum_hr.ts \
+  qt/locale/infinitum_hu.ts \
+  qt/locale/infinitum_id_ID.ts \
+  qt/locale/infinitum_it.ts \
+  qt/locale/infinitum_ja.ts \
+  qt/locale/infinitum_ka.ts \
+  qt/locale/infinitum_kk_KZ.ts \
+  qt/locale/infinitum_ko_KR.ts \
+  qt/locale/infinitum_ky.ts \
+  qt/locale/infinitum_la.ts \
+  qt/locale/infinitum_lt.ts \
+  qt/locale/infinitum_lv_LV.ts \
+  qt/locale/infinitum_mk_MK.ts \
+  qt/locale/infinitum_mn.ts \
+  qt/locale/infinitum_ms_MY.ts \
+  qt/locale/infinitum_nb.ts \
+  qt/locale/infinitum_nl.ts \
+  qt/locale/infinitum_pam.ts \
+  qt/locale/infinitum_pl.ts \
+  qt/locale/infinitum_pt_BR.ts \
+  qt/locale/infinitum_pt_PT.ts \
+  qt/locale/infinitum_ro_RO.ts \
+  qt/locale/infinitum_ru_RU.ts \
+  qt/locale/infinitum_ru.ts \
+  qt/locale/infinitum_sk.ts \
+  qt/locale/infinitum_sl_SI.ts \
+  qt/locale/infinitum_sq.ts \
+  qt/locale/infinitum_sr.ts \
+  qt/locale/infinitum_sv.ts \
+  qt/locale/infinitum_th_TH.ts \
+  qt/locale/infinitum_tr_TR.ts \
+  qt/locale/infinitum_tr.ts \
+  qt/locale/infinitum_uk.ts \
+  qt/locale/infinitum_ur_PK.ts \
+  qt/locale/infinitum_uz@Cyrl.ts \
+  qt/locale/infinitum_vi.ts \
+  qt/locale/infinitum_vi_VN.ts \
+  qt/locale/infinitum_zh_CN.ts \
+  qt/locale/infinitum_zh.ts \
+  qt/locale/infinitum_zh_TW.ts
 
 QT_FORMS_UI = \
   qt/forms/addressbookpage.ui \
@@ -104,10 +104,10 @@ QT_MOC_CPP = \
   qt/moc_addresstablemodel.cpp \
   qt/moc_askpassphrasedialog.cpp \
   qt/moc_bantablemodel.cpp \
-  qt/moc_bitcoinaddressvalidator.cpp \
-  qt/moc_bitcoinamountfield.cpp \
-  qt/moc_bitcoingui.cpp \
-  qt/moc_bitcoinunits.cpp \
+  qt/moc_infinitumaddressvalidator.cpp \
+  qt/moc_infinitumamountfield.cpp \
+  qt/moc_infinitumgui.cpp \
+  qt/moc_infinitumunits.cpp \
   qt/moc_clientmodel.cpp \
   qt/moc_coincontroldialog.cpp \
   qt/moc_coincontroltreewidget.cpp \
@@ -145,35 +145,35 @@ QT_MOC_CPP = \
   qt/moc_walletmodel.cpp \
   qt/moc_walletview.cpp
 
-BITCOIN_MM = \
+INFINITUM_MM = \
   qt/macdockiconhandler.mm \
   qt/macnotificationhandler.mm
 
 QT_MOC = \
-  qt/bitcoin.moc \
-  qt/bitcoinamountfield.moc \
+  qt/infinitum.moc \
+  qt/infinitumamountfield.moc \
   qt/intro.moc \
   qt/overviewpage.moc \
   qt/rpcconsole.moc
 
-QT_QRC_CPP = qt/qrc_bitcoin.cpp
-QT_QRC = qt/bitcoin.qrc
-QT_QRC_LOCALE_CPP = qt/qrc_bitcoin_locale.cpp
-QT_QRC_LOCALE = qt/bitcoin_locale.qrc
+QT_QRC_CPP = qt/qrc_infinitum.cpp
+QT_QRC = qt/infinitum.qrc
+QT_QRC_LOCALE_CPP = qt/qrc_infinitum_locale.cpp
+QT_QRC_LOCALE = qt/infinitum_locale.qrc
 
 PROTOBUF_CC = qt/paymentrequest.pb.cc
 PROTOBUF_H = qt/paymentrequest.pb.h
 PROTOBUF_PROTO = qt/paymentrequest.proto
 
-BITCOIN_QT_H = \
+INFINITUM_QT_H = \
   qt/addressbookpage.h \
   qt/addresstablemodel.h \
   qt/askpassphrasedialog.h \
   qt/bantablemodel.h \
-  qt/bitcoinaddressvalidator.h \
-  qt/bitcoinamountfield.h \
-  qt/bitcoingui.h \
-  qt/bitcoinunits.h \
+  qt/infinitumaddressvalidator.h \
+  qt/infinitumamountfield.h \
+  qt/infinitumgui.h \
+  qt/infinitumunits.h \
   qt/clientmodel.h \
   qt/coincontroldialog.h \
   qt/coincontroltreewidget.h \
@@ -223,8 +223,8 @@ RES_ICONS = \
   qt/res/icons/address-book.png \
   qt/res/icons/about.png \
   qt/res/icons/about_qt.png \
-  qt/res/icons/bitcoin.ico \
-  qt/res/icons/bitcoin.png \
+  qt/res/icons/infinitum.ico \
+  qt/res/icons/infinitum.png \
   qt/res/icons/chevron.png \
   qt/res/icons/clock1.png \
   qt/res/icons/clock2.png \
@@ -271,12 +271,12 @@ RES_ICONS = \
   qt/res/icons/verify.png \
   qt/res/icons/transaction_abandoned.png
 
-BITCOIN_QT_CPP = \
+INFINITUM_QT_CPP = \
   qt/bantablemodel.cpp \
-  qt/bitcoinaddressvalidator.cpp \
-  qt/bitcoinamountfield.cpp \
-  qt/bitcoingui.cpp \
-  qt/bitcoinunits.cpp \
+  qt/infinitumaddressvalidator.cpp \
+  qt/infinitumamountfield.cpp \
+  qt/infinitumgui.cpp \
+  qt/infinitumunits.cpp \
   qt/clientmodel.cpp \
   qt/csvmodelwriter.cpp \
   qt/guiutil.cpp \
@@ -295,11 +295,11 @@ BITCOIN_QT_CPP = \
   qt/utilitydialog.cpp
 
 if TARGET_WINDOWS
-BITCOIN_QT_CPP += qt/winshutdownmonitor.cpp
+INFINITUM_QT_CPP += qt/winshutdownmonitor.cpp
 endif
 
 if ENABLE_WALLET
-BITCOIN_QT_CPP += \
+INFINITUM_QT_CPP += \
   qt/addressbookpage.cpp \
   qt/addresstablemodel.cpp \
   qt/askpassphrasedialog.cpp \
@@ -332,19 +332,19 @@ RES_IMAGES =
 
 RES_MOVIES = $(wildcard qt/res/movies/spinner-*.png)
 
-BITCOIN_RC = qt/res/bitcoin-qt-res.rc
+INFINITUM_RC = qt/res/infinitum-qt-res.rc
 
-BITCOIN_QT_INCLUDES = -I$(builddir)/qt -I$(srcdir)/qt -I$(srcdir)/qt/forms \
+INFINITUM_QT_INCLUDES = -I$(builddir)/qt -I$(srcdir)/qt -I$(srcdir)/qt/forms \
   -I$(builddir)/qt/forms -DQT_NO_KEYWORDS
 
-qt_libbitcoinqt_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(BITCOIN_QT_INCLUDES) \
+qt_libinfinitumqt_a_CPPFLAGS = $(AM_CPPFLAGS) $(INFINITUM_INCLUDES) $(INFINITUM_QT_INCLUDES) \
   $(QT_INCLUDES) $(QT_DBUS_INCLUDES) $(PROTOBUF_CFLAGS) $(QR_CFLAGS)
-qt_libbitcoinqt_a_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
+qt_libinfinitumqt_a_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
 
-qt_libbitcoinqt_a_SOURCES = $(BITCOIN_QT_CPP) $(BITCOIN_QT_H) $(QT_FORMS_UI) \
+qt_libinfinitumqt_a_SOURCES = $(INFINITUM_QT_CPP) $(INFINITUM_QT_H) $(QT_FORMS_UI) \
   $(QT_QRC) $(QT_QRC_LOCALE) $(QT_TS) $(PROTOBUF_PROTO) $(RES_ICONS) $(RES_IMAGES) $(RES_MOVIES)
 
-nodist_qt_libbitcoinqt_a_SOURCES = $(QT_MOC_CPP) $(QT_MOC) $(PROTOBUF_CC) \
+nodist_qt_libinfinitumqt_a_SOURCES = $(QT_MOC_CPP) $(QT_MOC) $(PROTOBUF_CC) \
   $(PROTOBUF_H) $(QT_QRC_CPP) $(QT_QRC_LOCALE_CPP)
 
 # forms/foo.h -> forms/ui_foo.h
@@ -353,70 +353,70 @@ QT_FORMS_H=$(join $(dir $(QT_FORMS_UI)),$(addprefix ui_, $(notdir $(QT_FORMS_UI:
 # Most files will depend on the forms and moc files as includes. Generate them
 # before anything else.
 $(QT_MOC): $(QT_FORMS_H)
-$(qt_libbitcoinqt_a_OBJECTS) $(qt_bitcoin_qt_OBJECTS) : | $(QT_MOC)
+$(qt_libinfinitumqt_a_OBJECTS) $(qt_infinitum_qt_OBJECTS) : | $(QT_MOC)
 
 #Generating these with a half-written protobuf header leads to wacky results.
 #This makes sure it's done.
 $(QT_MOC): $(PROTOBUF_H)
 $(QT_MOC_CPP): $(PROTOBUF_H)
 
-# bitcoin-qt binary #
-qt_bitcoin_qt_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(BITCOIN_QT_INCLUDES) \
+# infinitum-qt binary #
+qt_infinitum_qt_CPPFLAGS = $(AM_CPPFLAGS) $(INFINITUM_INCLUDES) $(INFINITUM_QT_INCLUDES) \
   $(QT_INCLUDES) $(PROTOBUF_CFLAGS) $(QR_CFLAGS)
-qt_bitcoin_qt_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
+qt_infinitum_qt_CXXFLAGS = $(AM_CXXFLAGS) $(QT_PIE_FLAGS)
 
-qt_bitcoin_qt_SOURCES = qt/bitcoin.cpp
+qt_infinitum_qt_SOURCES = qt/infinitum.cpp
 if TARGET_DARWIN
-  qt_bitcoin_qt_SOURCES += $(BITCOIN_MM)
+  qt_infinitum_qt_SOURCES += $(INFINITUM_MM)
 endif
 if TARGET_WINDOWS
-  qt_bitcoin_qt_SOURCES += $(BITCOIN_RC)
+  qt_infinitum_qt_SOURCES += $(INFINITUM_RC)
 endif
-qt_bitcoin_qt_LDADD = qt/libbitcoinqt.a $(LIBBITCOIN_SERVER)
+qt_infinitum_qt_LDADD = qt/libinfinitumqt.a $(LIBINFINITUM_SERVER)
 if ENABLE_WALLET
-qt_bitcoin_qt_LDADD += $(LIBBITCOIN_WALLET)
+qt_infinitum_qt_LDADD += $(LIBINFINITUM_WALLET)
 endif
 if ENABLE_ZMQ
-qt_bitcoin_qt_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
+qt_infinitum_qt_LDADD += $(LIBINFINITUM_ZMQ) $(ZMQ_LIBS)
 endif
-qt_bitcoin_qt_LDADD += $(LIBBITCOIN_CLI) $(LIBBITCOIN_COMMON) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CONSENSUS) $(LIBBITCOIN_CRYPTO) $(LIBUNIVALUE) $(LIBLEVELDB) $(LIBMEMENV) \
+qt_infinitum_qt_LDADD += $(LIBINFINITUM_CLI) $(LIBINFINITUM_COMMON) $(LIBINFINITUM_UTIL) $(LIBINFINITUM_CONSENSUS) $(LIBINFINITUM_CRYPTO) $(LIBUNIVALUE) $(LIBLEVELDB) $(LIBMEMENV) \
   $(BOOST_LIBS) $(QT_LIBS) $(QT_DBUS_LIBS) $(QR_LIBS) $(PROTOBUF_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(LIBSECP256K1) \
   $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS)
-qt_bitcoin_qt_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
-qt_bitcoin_qt_LIBTOOLFLAGS = --tag CXX
+qt_infinitum_qt_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(QT_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+qt_infinitum_qt_LIBTOOLFLAGS = --tag CXX
 
 #locale/foo.ts -> locale/foo.qm
 QT_QM=$(QT_TS:.ts=.qm)
 
 SECONDARY: $(QT_QM)
 
-qt/bitcoinstrings.cpp: $(libbitcoin_server_a_SOURCES) $(libbitcoin_wallet_a_SOURCES)
+qt/infinitumstrings.cpp: $(libinfinitum_server_a_SOURCES) $(libinfinitum_wallet_a_SOURCES)
 	@test -n $(XGETTEXT) || echo "xgettext is required for updating translations"
 	$(AM_V_GEN) cd $(srcdir); XGETTEXT=$(XGETTEXT) PACKAGE_NAME="$(PACKAGE_NAME)" COPYRIGHT_HOLDERS="$(COPYRIGHT_HOLDERS)" COPYRIGHT_HOLDERS_SUBSTITUTION="$(COPYRIGHT_HOLDERS_SUBSTITUTION)" $(PYTHON) ../share/qt/extract_strings_qt.py $^
 
-translate: qt/bitcoinstrings.cpp $(QT_FORMS_UI) $(QT_FORMS_UI) $(BITCOIN_QT_CPP) $(BITCOIN_QT_H) $(BITCOIN_MM)
+translate: qt/infinitumstrings.cpp $(QT_FORMS_UI) $(QT_FORMS_UI) $(INFINITUM_QT_CPP) $(INFINITUM_QT_H) $(INFINITUM_MM)
 	@test -n $(LUPDATE) || echo "lupdate is required for updating translations"
-	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(LUPDATE) $^ -locations relative -no-obsolete -ts qt/locale/bitcoin_en.ts
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(LUPDATE) $^ -locations relative -no-obsolete -ts qt/locale/infinitum_en.ts
 
 $(QT_QRC_LOCALE_CPP): $(QT_QRC_LOCALE) $(QT_QM)
 	@test -f $(RCC)
 	@test -f $(@D)/$(<F) || cp -f $< $(@D)
-	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name bitcoin_locale $(@D)/$(<F) | \
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name infinitum_locale $(@D)/$(<F) | \
 	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
 
 $(QT_QRC_CPP): $(QT_QRC) $(QT_FORMS_H) $(RES_ICONS) $(RES_IMAGES) $(RES_MOVIES) $(PROTOBUF_H)
 	@test -f $(RCC)
-	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name bitcoin $< | \
+	$(AM_V_GEN) QT_SELECT=$(QT_SELECT) $(RCC) -name infinitum $< | \
 	  $(SED) -e '/^\*\*.*Created:/d' -e '/^\*\*.*by:/d' > $@
 
-CLEAN_QT = $(nodist_qt_libbitcoinqt_a_SOURCES) $(QT_QM) $(QT_FORMS_H) qt/*.gcda qt/*.gcno
+CLEAN_QT = $(nodist_qt_libinfinitumqt_a_SOURCES) $(QT_QM) $(QT_FORMS_H) qt/*.gcda qt/*.gcno
 
 CLEANFILES += $(CLEAN_QT)
 
-bitcoin_qt_clean: FORCE
-	rm -f $(CLEAN_QT) $(qt_libbitcoinqt_a_OBJECTS) $(qt_bitcoin_qt_OBJECTS) qt/bitcoin-qt$(EXEEXT) $(LIBBITCOINQT)
+infinitum_qt_clean: FORCE
+	rm -f $(CLEAN_QT) $(qt_libinfinitumqt_a_OBJECTS) $(qt_infinitum_qt_OBJECTS) qt/infinitum-qt$(EXEEXT) $(LIBINFINITUMQT)
 
-bitcoin_qt : qt/bitcoin-qt$(EXEEXT)
+infinitum_qt : qt/infinitum-qt$(EXEEXT)
 
 ui_%.h: %.ui
 	@test -f $(UIC)

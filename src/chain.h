@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CHAIN_H
-#define BITCOIN_CHAIN_H
+#ifndef INFINITUM_CHAIN_H
+#define INFINITUM_CHAIN_H
 
 #include "arith_uint256.h"
 #include "primitives/block.h"
@@ -459,4 +459,4 @@ public:
     const CBlockIndex *FindFork(const CBlockIndex *pindex) const;
 };
 
-#endif // BITCOIN_CHAIN_H
+#endif // INFINITUM_CHAIN_H

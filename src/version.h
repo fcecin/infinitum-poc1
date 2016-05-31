@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_VERSION_H
-#define BITCOIN_VERSION_H
+#ifndef INFINITUM_VERSION_H
+#define INFINITUM_VERSION_H
 
 /**
  * network protocol versioning
@@ -39,4 +39,4 @@ static const int SENDHEADERS_VERSION = 70012;
 //! "feefilter" tells peers to filter invs to you by fee starts with this version
 static const int FEEFILTER_VERSION = 70013;
 
-#endif // BITCOIN_VERSION_H
+#endif // INFINITUM_VERSION_H

@@ -8,7 +8,7 @@
 #include "main.h" // For PartitionCheck
 
 #include "test/testutil.h"
-#include "test/test_bitcoin.h"
+#include "test/test_infinitum.h"
 
 #include <boost/test/unit_test.hpp>
 
