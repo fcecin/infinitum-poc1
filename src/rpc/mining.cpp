@@ -164,6 +164,7 @@ UniValue generate(const UniValue& params, bool fHelp)
     uint64_t nMaxTries = 1000000;
     if (params.size() > 1) {
         nMaxTries = params[1].get_int();
+	nMaxTries *= 1000000; // Infinitum: MILLIONS of maxtries
     }
 
     boost::shared_ptr<CReserveScript> coinbaseScript;
@@ -201,6 +202,7 @@ UniValue generatetoaddress(const UniValue& params, bool fHelp)
     uint64_t nMaxTries = 1000000;
     if (params.size() > 2) {
         nMaxTries = params[2].get_int();
+	nMaxTries *= 1000000; // Infinitum: MILLIONS of maxtries
     }
 
     CInfinitumAddress address(params[1].get_str());

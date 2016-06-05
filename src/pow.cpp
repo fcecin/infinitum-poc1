@@ -14,6 +14,10 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 {
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
+    // Infinitum: FIXME: remove this when done testing with instamine blocks 
+        return nProofOfWorkLimit;
+
+    
     // Genesis block
     if (pindexLast == NULL)
         return nProofOfWorkLimit;
