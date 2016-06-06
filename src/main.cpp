@@ -2347,7 +2347,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 
         if (!tx.IsCoinBase())
         {
-            if (!view.HaveInputs(tx))
+	    if (!view.HaveInputs(tx))
                 return state.DoS(100, error("ConnectBlock(): inputs missing/spent"),
                                  REJECT_INVALID, "bad-txns-inputs-missingorspent");
 
@@ -2357,6 +2357,13 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             prevheights.resize(tx.vin.size());
             for (size_t j = 0; j < tx.vin.size(); j++) {
                 prevheights[j] = view.AccessCoins(tx.vin[j].prevout.hash)->nHeight;
+
+		// Infinitum: also check for abandoned old inputs that are unspendable here.
+		// 6 * 24 * 365 * 15 = 788,400 blocks every 15 years.
+		if (pindex->nHeight - prevheights[j] >= 788400) {
+		  return state.DoS(100, error("ConnectBlock(): expired inputs"),
+                                   REJECT_INVALID, "bad-txns-inputs-expired");
+		}
             }
 
             if (!SequenceLocks(tx, nLockTimeFlags, &prevheights, *pindex)) {
