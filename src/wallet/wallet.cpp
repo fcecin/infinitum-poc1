@@ -1326,6 +1326,9 @@ CAmount CWalletTx::GetCredit(const isminefilter& filter) const
     if (IsCoinBase() && GetBlocksToMaturity() > 0)
         return 0;
 
+    if (IsInactivityExpired())
+        return 0;
+
     int64_t credit = 0;
     if (filter & ISMINE_SPENDABLE)
     {
@@ -1376,6 +1379,9 @@ CAmount CWalletTx::GetAvailableCredit(bool fUseCache) const
     if (IsCoinBase() && GetBlocksToMaturity() > 0)
         return 0;
 
+    if (IsInactivityExpired())
+        return 0;
+
     if (fUseCache && fAvailableCreditCached)
         return nAvailableCreditCached;
 
@@ -1418,6 +1424,9 @@ CAmount CWalletTx::GetAvailableWatchOnlyCredit(const bool& fUseCache) const
 
     // Must wait until coinbase is safely deep enough in the chain before valuing it
     if (IsCoinBase() && GetBlocksToMaturity() > 0)
+        return 0;
+
+    if (IsInactivityExpired())
         return 0;
 
     if (fUseCache && fAvailableWatchCreditCached)
@@ -1488,6 +1497,25 @@ bool CWalletTx::IsTrusted() const
     }
     return true;
 }
+
+
+// Infinitum:: If the transaction is in the blockchain and its block is more than
+//  10 years old, the entire transaction's outputs are unspendable forever.
+bool CWalletTx::IsInactivityExpired() const
+{
+  //return IsInactivityExpired(GetDepthInMainChain());
+  const CBlockIndex *pindexTxBlock = NULL;
+  GetDepthInMainChain(pindexTxBlock);
+  if (!pindexTxBlock)
+    return false; // whatever
+  return TooManySnapshotsBetween(pindexTxBlock->nHeight, chainActive.Height() + 1);
+}
+
+//bool CWalletTx::IsInactivityExpired(int nDepth) const
+//{
+//    return (nDepth > TRANSACTION_INACTIVITY_EXPIRED_BLOCKS);
+//}
+
 
 bool CWalletTx::IsEquivalentTo(const CWalletTx& tx) const
 {
@@ -1669,6 +1697,9 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
             int nDepth = pcoin->GetDepthInMainChain();
             if (nDepth < 0)
                 continue;
+
+	    if (pcoin->IsInactivityExpired())
+	        continue;
 
             // We should not consider coins which aren't at least in our mempool
             // It's possible for these to be conflicted via ancestors which we may never be able to detect
@@ -2003,12 +2034,14 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
     // nLockTime that preclude a fix later.
     txNew.nLockTime = chainActive.Height();
 
+    // Infinitum:: I don't want this.
+    //
     // Secondly occasionally randomly pick a nLockTime even further back, so
     // that transactions that are delayed after signing for whatever reason,
     // e.g. high-latency mix networks and some CoinJoin implementations, have
     // better privacy.
-    if (GetRandInt(10) == 0)
-        txNew.nLockTime = std::max(0, (int)txNew.nLockTime - GetRandInt(100));
+    //if (GetRandInt(10) == 0)
+    //    txNew.nLockTime = std::max(0, (int)txNew.nLockTime - GetRandInt(100));
 
     assert(txNew.nLockTime <= (unsigned int)chainActive.Height());
     assert(txNew.nLockTime < LOCKTIME_THRESHOLD);
@@ -2644,6 +2677,9 @@ std::map<CTxDestination, CAmount> CWallet::GetAddressBalances()
             if (nDepth < (pcoin->IsFromMe(ISMINE_ALL) ? 0 : 1))
                 continue;
 
+	    if (pcoin->IsInactivityExpired())
+	        continue;
+
             for (unsigned int i = 0; i < pcoin->vout.size(); i++)
             {
                 CTxDestination addr;
@@ -2771,7 +2807,7 @@ CAmount CWallet::GetAccountBalance(CWalletDB& walletdb, const std::string& strAc
     for (map<uint256, CWalletTx>::iterator it = mapWallet.begin(); it != mapWallet.end(); ++it)
     {
         const CWalletTx& wtx = (*it).second;
-        if (!CheckFinalTx(wtx) || wtx.GetBlocksToMaturity() > 0 || wtx.GetDepthInMainChain() < 0)
+        if (!CheckFinalTx(wtx) || wtx.GetBlocksToMaturity() > 0 || wtx.GetDepthInMainChain() < 0 || wtx.IsInactivityExpired())
             continue;
 
         CAmount nReceived, nSent, nFee;

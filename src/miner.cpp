@@ -156,6 +156,8 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
             std::make_heap(vecPriority.begin(), vecPriority.end(), pricomparer);
         }
 
+	CCoinsViewCache view(pcoinsTip);
+
         CTxMemPool::indexed_transaction_set::index<mining_score>::type::iterator mi = mempool.mapTx.get<mining_score>().begin();
         CTxMemPool::txiter iter;
 
@@ -223,6 +225,11 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
 
             if (!IsFinalTx(tx, nHeight, nLockTimeCutoff))
                 continue;
+
+	    // Infinitum:: don't mine  transactions that have, as inputs, any outputs that
+	    //   are more than 10 years old (inactivity-expired coins).
+	    if (IsInactivityExpired(view, tx, nHeight))
+	        continue;
 
             unsigned int nTxSigOps = iter->GetSigOpCount();
             if (nBlockSigOps + nTxSigOps >= MAX_BLOCK_SIGOPS) {

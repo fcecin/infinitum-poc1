@@ -730,6 +730,28 @@ bool CheckFinalTx(const CTransaction &tx, int flags)
     return IsFinalTx(tx, nBlockHeight, nBlockTime);
 }
 
+int NumSnapshotsBetween(int nOutputHeight, int nInputHeight)
+{
+  int nOutputYear = nOutputHeight / SNAPSHOTTING_INTERVAL_NUM_BLOCKS;
+  int nInputYear = nInputHeight / SNAPSHOTTING_INTERVAL_NUM_BLOCKS;
+  return nInputYear - nOutputYear;
+}
+
+bool TooManySnapshotsBetween(int nOutputHeight, int nInputHeight)
+{
+  return NumSnapshotsBetween(nOutputHeight, nInputHeight) > TRANSACTION_INACTIVITY_EXPIRED_YEARS;
+}
+
+bool IsInactivityExpired(const CCoinsViewCache &view, const CTransaction &tx, int nBlockHeight)
+{
+  for (size_t j = 0; j < tx.vin.size(); j++) {
+    int nCoinHeight = view.AccessCoins(tx.vin[j].prevout.hash)->nHeight;
+    if (TooManySnapshotsBetween(nCoinHeight, nBlockHeight))
+      return true;
+  }
+  return false;
+}
+
 /**
  * Calculates the block height and previous block's median time past at
  * which the transaction will be considered final in the context of BIP 68.
@@ -1169,6 +1191,18 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
                 break;
             }
         }
+
+	// Infinitum:: check for abandoned old inputs that are unspendable here.
+	int nHeight = GetHeight();
+	BOOST_FOREACH(const CTxIn &txin, tx.vin) {
+            const CCoins *coins = view.AccessCoins(txin.prevout.hash);
+	    if (TooManySnapshotsBetween(coins->nHeight, nHeight)) {
+	      return state.DoS(10, false,
+                                 REJECT_INVALID, "bad-txns-inputs-expired", false,
+                                 strprintf("%s spends an inactivity-expired transaction",
+                                           hash.ToString()));
+	    }
+	}
 
         CTxMemPoolEntry entry(tx, nFees, GetTime(), dPriority, chainActive.Height(), pool.HasNoInputsOf(tx), inChainInputValue, fSpendsCoinbase, nSigOps, lp);
         unsigned int nSize = entry.GetTxSize();
@@ -2355,16 +2389,8 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             // BIP68 lock checks (as opposed to nLockTime checks) must
             // be in ConnectBlock because they require the UTXO set
             prevheights.resize(tx.vin.size());
-            for (size_t j = 0; j < tx.vin.size(); j++) {
+            for (size_t j = 0; j < tx.vin.size(); j++)
                 prevheights[j] = view.AccessCoins(tx.vin[j].prevout.hash)->nHeight;
-
-		// Infinitum: also check for abandoned old inputs that are unspendable here.
-		// 6 * 24 * 365 * 15 = 788,400 blocks every 15 years.
-		if (pindex->nHeight - prevheights[j] >= 788400) {
-		  return state.DoS(100, error("ConnectBlock(): expired inputs"),
-                                   REJECT_INVALID, "bad-txns-inputs-expired");
-		}
-            }
 
             if (!SequenceLocks(tx, nLockTimeFlags, &prevheights, *pindex)) {
                 return state.DoS(100, error("%s: contains a non-BIP68-final transaction", __func__),
@@ -2382,6 +2408,17 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                                      REJECT_INVALID, "bad-blk-sigops");
             }
 
+
+	    // Infinitum: also check for abandoned old inputs that are unspendable here.
+            for (size_t j = 0; j < tx.vin.size(); j++) {
+	        int nCoinHeight = view.AccessCoins(tx.vin[j].prevout.hash)->nHeight;
+	        if (TooManySnapshotsBetween(nCoinHeight, pindex->nHeight)) {
+		  return state.DoS(100, error("ConnectBlock(): expired inputs"),
+                                   REJECT_INVALID, "bad-txns-inputs-expired");
+		}
+            }
+	    
+	    
             nFees += view.GetValueIn(tx)-tx.GetValueOut();
 
             std::vector<CScriptCheck> vChecks;

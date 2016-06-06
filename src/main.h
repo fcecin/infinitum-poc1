@@ -42,6 +42,12 @@ class CValidationState;
 struct CNodeStateStats;
 struct LockPoints;
 
+// Infinitum:: size of the block "snapshotting year," in blocks
+static const int64_t SNAPSHOTTING_INTERVAL_NUM_BLOCKS = 20; // FIXME: change to 52,560 (1 year)
+// Infinitum:: number of "snapshotting years" (minimum) an unspent output will not be
+//   considered inactive and expired and hence unspendable.
+static const int64_t TRANSACTION_INACTIVITY_EXPIRED_YEARS = 10;
+
 /** Default for DEFAULT_WHITELISTRELAY. */
 static const bool DEFAULT_WHITELISTRELAY = true;
 /** Default for DEFAULT_WHITELISTFORCERELAY. */
@@ -359,6 +365,18 @@ bool IsFinalTx(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime);
  * See consensus/consensus.h for flag definitions.
  */
 bool CheckFinalTx(const CTransaction &tx, int flags = -1);
+
+// Infinitum:: given a block height for an output and an input that wants to spend it,
+//  compute the number of "yearly snapshotting" events that happened between them.  
+int NumSnapshotsBetween(int nOutputHeight, int nInputHeight);
+
+// Infinitum:: given a block height for an output and an input that wants to spend it,
+//  check whether the're too far apart and hence unable to spend the output.
+bool TooManySnapshotsBetween(int nOutputHeight, int nInputHeight);
+
+// Infinitum:: check if a transaction is inactivity expired: trying to spend outputs that
+//   are more than 10 years old given the block height to be included as argument
+bool IsInactivityExpired(const CCoinsViewCache &view, const CTransaction &tx, int nBlockHeight);
 
 /**
  * Test whether the LockPoints height and time are still valid on the current chain

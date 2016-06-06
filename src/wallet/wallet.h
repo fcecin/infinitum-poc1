@@ -394,6 +394,9 @@ public:
     bool InMempool() const;
     bool IsTrusted() const;
 
+    bool IsInactivityExpired() const;
+    //bool IsInactivityExpired(int nDepth) const;
+    
     int64_t GetTxTime() const;
     int GetRequestCount() const;
 
