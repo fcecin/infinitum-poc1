@@ -3,6 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <boost/thread.hpp>
+
 #include "chainparams.h"
 #include "consensus/merkle.h"
 
@@ -17,12 +19,12 @@
 #include "chainparamsseeds.h"
 
 #include "arith_uint256.h"
-
+/*
 // just use the old btc genesis block for testnet/reg
 static CBlock CreateBTGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
     CMutableTransaction txNew;
-    txNew.nVersion = 1;    // Transactions are in version 2 now it seems
+    txNew.nVersion = 1;
     txNew.vin.resize(1);
     txNew.vout.resize(1);
     txNew.vin[0].scriptSig = CScript() << 486604799 << CScriptNum(4) << std::vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
@@ -39,7 +41,7 @@ static CBlock CreateBTGenesisBlock(const char* pszTimestamp, const CScript& gene
     genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
     return genesis;
 }
-
+*/
 /**
  * Build the genesis block. Note that the output of its generation
  * transaction cannot be spent since it did not originally exist in the
@@ -51,19 +53,20 @@ static CBlock CreateBTGenesisBlock(const char* pszTimestamp, const CScript& gene
  *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
  *   vMerkleTree: 4a5e1e
  */
+/*
 // just use the old btc genesis block for testnet/reg
-static CBlock CreateBTGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
+static CBlock CreateBTGenesisBlock(uint64_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
   const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
   const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
   return CreateBTGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
+*/
 
-
-static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
+static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint64_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
     CMutableTransaction txNew;
-    txNew.nVersion = 2;    // Transactions are in version 2 now it seems
+    txNew.nVersion = 1;    // Use V1 because of the time in coinbase thing that we aren't doing; the rest will use v2
     txNew.vin.resize(1);
     txNew.vout.resize(1);
     txNew.vin[0].scriptSig = CScript() << 486604799 << CScriptNum(4) << std::vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
@@ -71,10 +74,10 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     txNew.vout[0].scriptPubKey = genesisOutputScript;
 
     CBlock genesis;
-    genesis.nTime    = nTime;
-    genesis.nBits    = nBits;
-    genesis.nNonce   = nNonce;
-    genesis.nVersion = nVersion;
+    genesis.nTime     = nTime;
+    genesis.nBits     = nBits;
+    genesis.nNonce    = nNonce;
+    genesis.nVersion  = nVersion;
     genesis.vtx.push_back(txNew);
     genesis.hashPrevBlock.SetNull();
     genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
@@ -92,7 +95,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
  *   vMerkleTree: 4a5e1e
  */
-static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
+static CBlock CreateGenesisBlock(uint64_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
 //const char* pszTimestamp = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks";
 //const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
@@ -100,6 +103,68 @@ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits
   const char* pszTimestamp = "Until you change the way money works, you change nothing. -- Michael C. Ruppert";
   const CScript genesisOutputScript = CScript() << ParseHex("04a6565aca69c8a3d1d13b0931b354e3bc5859a88142a9cab01b16819fbd7883667f1a5e5d8afe579707cd036771cdc12c6cfa6e7a7f6f15e3181580ee69a9606b") << OP_CHECKSIG;
   return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
+}
+
+void ParallelFindGenesis(uint64_t nTime, int nSliceIndex, int nSliceCount)
+{
+  uint32_t nNonce = 0;
+  //uint64_t nTime = 1464970680; // this was the old one
+  //uint32_t nTime = 1466008197; // new one
+
+  nTime += nSliceIndex;
+  
+  // create version 4 block, why not?
+  CBlock genesis = CreateGenesisBlock(nTime, nNonce, 0x1d00ffff, 4, 50 * COIN);
+  
+  printf("slice %i: genesis hash merkle root: %s\n", nSliceIndex, genesis.hashMerkleRoot.GetHex().c_str());
+
+  int64_t nTimeStart = GetTimeMicros();
+
+  uint64_t nOps = 0;
+
+  unsigned int nbest = 0;
+
+  while (true) {
+	  
+    uint256 hash = genesis.GetHash();
+
+    arith_uint256 arith_hash = UintToArith256(hash);
+	  
+    unsigned int nzeroes = 256 - arith_hash.bits();
+
+    if (nzeroes > nbest)
+      nbest = nzeroes;
+	  
+    if (nzeroes >= 35) {
+      printf("slice %i: found hash with hbpos %u\n", nSliceIndex, nzeroes);
+      printf("slice %i: nonce %u time %lu\n", nSliceIndex, nNonce, nTime);
+      printf("slice %i: hash is %s\n", nSliceIndex, hash.GetHex().c_str());
+      exit(0);
+    }
+
+    ++nOps;
+    static const uint64_t nReportOps = 10000000;
+    if (nOps >= nReportOps) {
+      uint64_t nTimeNow = GetTimeMicros();
+      uint64_t nMicrosElapsed = nTimeNow - nTimeStart;
+      //double dMHS = double(nOps) / (double(nMicrosElapsed) / 1000000.0);
+      double dMHS = (double(nOps * 1000000)) / (double(nMicrosElapsed));
+      printf("slice %i T=%lu N=%u best=%u: %lu hashes in %lu us; H/s: %.2f\n", nSliceIndex, nTime, nNonce, nbest, nReportOps, nMicrosElapsed, dMHS);
+      nTimeStart = nTimeNow;
+      nOps = 0;
+    }
+	  
+    ++nNonce;
+    if (nNonce == 0) {
+      nTime += nSliceCount;
+      printf("slice %i: Nonce wrapped around, time now: %lu\n", nSliceIndex, nTime);
+    }
+
+    genesis.nNonce = nNonce;
+    genesis.nTime = nTime;
+  }
+
+  // never reaches here
 }
 
 /**
@@ -157,52 +222,31 @@ public:
         nDefaultPort = 44144;
         nPruneAfterHeight = 100000;
 
-	genesis = CreateGenesisBlock(1464970683, 3000893783, 0x1d00ffff, 4, 50 * COIN);
 	
-	consensus.hashGenesisBlock = genesis.GetHash();
 
-	assert(consensus.hashGenesisBlock == uint256S("0x000000001089cece8d126e1d5143c9b7923f3cdb4b28cc693d1ff69433509974"));
-        assert(genesis.hashMerkleRoot == uint256S("0xcced355ef228053f585b932df1efce18555dd4e10fc6a46a2a59beaf2c6e319a"));
+	// old one w/ also wrong tx version "2"
+	//assert(consensus.hashGenesisBlock == uint256S("0x000000001089cece8d126e1d5143c9b7923f3cdb4b28cc693d1ff69433509974"));
+        //assert(genesis.hashMerkleRoot == uint256S("0xcced355ef228053f585b932df1efce18555dd4e10fc6a46a2a59beaf2c6e319a"));
+
+	// new one w/ 64 bit time and 32 bit dustvote
+	genesis = CreateGenesisBlock(1466021007, 1758599628, 0x1d00ffff, 4, 50 * COIN);
+	consensus.hashGenesisBlock = genesis.GetHash();
+	assert(consensus.hashGenesisBlock == uint256S("0x0000000017f8b3b12bc95ddbd3d2d697cb0ee2264679fc134eb5cba378c3c617"));
+        assert(genesis.hashMerkleRoot == uint256S("0x3ead46f2ceecbf038949782d43e244d301f965fb43d94dc5cd048265083f8980"));
 
 	/*
 
-	  // our genesis miner
-	
-	uint32_t nNonce = 0;
-	uint32_t nTime = 1464970680;
-
-	// create version 4 block, why not?
-	genesis = CreateGenesisBlock(nTime, nNonce, 0x1d00ffff, 4, 50 * COIN);
-
-
-	printf("genesis hash merkle root: %s\n", genesis.hashMerkleRoot.GetHex().c_str());
-	
-	while (true) {
-	  
-	  uint256 hash = genesis.GetHash();
-
-	  arith_uint256 arith_hash = UintToArith256(hash);
-	  
-	  unsigned int nzeroes = 256 - arith_hash.bits();
-	  
-	  if (nzeroes >= 35) {
-	    printf("found hash with hbpos %i\n", nzeroes);
-	    printf("nonce %i time %i\n", nNonce, nTime);
-	    printf("hash is %s\n", hash.GetHex().c_str());
-	    exit(0);
-	  }
-	  
-	  ++nNonce;
-	  if (nNonce == 0) {
-	    printf("Nonce wrapped around, time now: %i\n", nTime);
-	    ++nTime;
-	  }
-
-	  genesis.nNonce = nNonce;
-	  genesis.nTime = nTime;
+	// This code mines a genesis block.
+	static const int nSliceCount = 4;
+	boost::thread *pThread;
+	for (int i=0; i<nSliceCount; ++i) {
+	  pThread = new boost::thread(ParallelFindGenesis, 1466021000, i, nSliceCount);
 	}
+	pThread->join();
 
-	*/	
+	*/
+	
+	
 	
 	// we don't have DNS seeds
         //e.g.:  vSeeds.push_back(CDNSSeedData("bluematt.me", "dnsseed.bluematt.me")); // Matt Corallo
@@ -292,10 +336,17 @@ public:
         nDefaultPort = 44145;
         nPruneAfterHeight = 1000;
 
-        genesis = CreateBTGenesisBlock(1296688602, 414098458, 0x1d00ffff, 1, 50 * COIN);
-        consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"));
-        assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
+	// Infinitum:: FIXME:: GENERATE A CUSTOM GENESIS BLOCK
+	//
+        //genesis = CreateGenesisBlock(1296688602, 414098458, 0x1d00ffff, 1, 50 * COIN);
+        //consensus.hashGenesisBlock = genesis.GetHash();
+        //assert(consensus.hashGenesisBlock == uint256S("0x000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"));
+        //assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
+	// new one w/ 64 bit time and 32 bit dustvote
+	genesis = CreateGenesisBlock(1466021007, 1758599628, 0x1d00ffff, 4, 50 * COIN);
+	consensus.hashGenesisBlock = genesis.GetHash();
+	assert(consensus.hashGenesisBlock == uint256S("0x0000000017f8b3b12bc95ddbd3d2d697cb0ee2264679fc134eb5cba378c3c617"));
+        assert(genesis.hashMerkleRoot == uint256S("0x3ead46f2ceecbf038949782d43e244d301f965fb43d94dc5cd048265083f8980"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -363,10 +414,17 @@ public:
         nDefaultPort = 18444;
         nPruneAfterHeight = 1000;
 
-        genesis = CreateBTGenesisBlock(1296688602, 2, 0x207fffff, 1, 50 * COIN);
-        consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206"));
-        assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
+	//// Infinitum:: FIXME:: GENERATE A CUSTOM GENESIS BLOCK
+	//
+        //genesis = CreateGenesisBlock(1296688602, 2, 0x207fffff, 1, 50 * COIN);
+        //consensus.hashGenesisBlock = genesis.GetHash();
+        //assert(consensus.hashGenesisBlock == uint256S("0x0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206"));
+        //assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
+	// new one w/ 64 bit time and 32 bit dustvote
+	genesis = CreateGenesisBlock(1466021007, 1758599628, 0x1d00ffff, 4, 50 * COIN);
+	consensus.hashGenesisBlock = genesis.GetHash();
+	assert(consensus.hashGenesisBlock == uint256S("0x0000000017f8b3b12bc95ddbd3d2d697cb0ee2264679fc134eb5cba378c3c617"));
+        assert(genesis.hashMerkleRoot == uint256S("0x3ead46f2ceecbf038949782d43e244d301f965fb43d94dc5cd048265083f8980"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();      //!< Regtest mode doesn't have any DNS seeds.

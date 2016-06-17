@@ -22,9 +22,10 @@ class CBlockHeader
 public:
     // header
     int32_t nVersion;
+    uint32_t nDustVote; // Infinitum:: the high 16 bits are unused, can be recycled
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
-    uint32_t nTime;
+    uint64_t nTime;  // Infinitum:: 64-bit time.
     uint32_t nBits;
     uint32_t nNonce;
 
@@ -39,6 +40,7 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(this->nVersion);
         nVersion = this->nVersion;
+	READWRITE(nDustVote);
         READWRITE(hashPrevBlock);
         READWRITE(hashMerkleRoot);
         READWRITE(nTime);
@@ -49,6 +51,7 @@ public:
     void SetNull()
     {
         nVersion = 0;
+	nDustVote = 0;
         hashPrevBlock.SetNull();
         hashMerkleRoot.SetNull();
         nTime = 0;
@@ -109,6 +112,7 @@ public:
     {
         CBlockHeader block;
         block.nVersion       = nVersion;
+	block.nDustVote      = nDustVote;
         block.hashPrevBlock  = hashPrevBlock;
         block.hashMerkleRoot = hashMerkleRoot;
         block.nTime          = nTime;

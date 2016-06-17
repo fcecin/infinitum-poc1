@@ -14,6 +14,17 @@
 
 #include <vector>
 
+// Infinitum:: 2^63-1 maximum balance for an unspent output (it's signed)
+//#define UTXO_BALANCE_COUNT_SIZE 63
+// Infinitum:: size of the block "snapshotting year," in blocks
+static const int64_t SNAPSHOTTING_INTERVAL_NUM_BLOCKS = 4; // FIXME: change to 105,120 (2 years)
+// Infinitum:: number of "snapshotting years" (minimum) an unspent output will not be
+//   considered inactive and expired and hence unspendable. the "year" is actually two years
+static const int64_t TRANSACTION_INACTIVITY_EXPIRED_SNAPSHOTS = 10;
+// Infinitum:: maximum number of unspent outputs (UTXOs) on a snapshot / snapshotting event
+//static const int64_t MAX_SNAPSHOT_UTXO_COUNT = 10000000000; // One for every person on this planet and then some
+
+
 class CBlockFileInfo
 {
 public:
@@ -156,7 +167,7 @@ class CBlockIndex
 public:
     //! pointer to the hash of the block, if any. Memory is owned by this CBlockIndex
     const uint256* phashBlock;
-
+    
     //! pointer to the index of the predecessor of this block
     CBlockIndex* pprev;
 
@@ -165,7 +176,7 @@ public:
 
     //! height of the entry in the chain. The genesis block has height 0
     int nHeight;
-
+    
     //! Which # file this block is stored in (blk?????.dat)
     int nFile;
 
@@ -185,17 +196,20 @@ public:
     //! (memory only) Number of transactions in the chain up to and including this block.
     //! This value will be non-zero only if and only if transactions for this block and all its parents are available.
     //! Change to 64-bit type when necessary; won't happen before 2030
-    unsigned int nChainTx;
+    //unsigned int nChainTx;
+    // Infinitum:: 64 bit
+    int64_t nChainTx;
 
     //! Verification status of this block. See enum BlockStatus
     unsigned int nStatus;
 
     //! block header
-    int nVersion;
+    int32_t nVersion;
+    uint32_t nDustVote;   // Infinitum:: the upper 16 bits are unused & can be recycled
     uint256 hashMerkleRoot;
-    unsigned int nTime;
-    unsigned int nBits;
-    unsigned int nNonce;
+    uint64_t nTime;   // Infinitum:: 64-bit time in header
+    uint32_t nBits;
+    uint32_t nNonce;
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     uint32_t nSequenceId;
@@ -214,8 +228,9 @@ public:
         nChainTx = 0;
         nStatus = 0;
         nSequenceId = 0;
-
+	
         nVersion       = 0;
+	nDustVote      = 0;
         hashMerkleRoot = uint256();
         nTime          = 0;
         nBits          = 0;
@@ -232,6 +247,7 @@ public:
         SetNull();
 
         nVersion       = block.nVersion;
+	nDustVote      = block.nDustVote;
         hashMerkleRoot = block.hashMerkleRoot;
         nTime          = block.nTime;
         nBits          = block.nBits;
@@ -260,6 +276,7 @@ public:
     {
         CBlockHeader block;
         block.nVersion       = nVersion;
+	block.nDustVote      = nDustVote;
         if (pprev)
             block.hashPrevBlock = pprev->GetBlockHash();
         block.hashMerkleRoot = hashMerkleRoot;
@@ -371,6 +388,7 @@ public:
 
         // block header
         READWRITE(this->nVersion);
+	READWRITE(nDustVote);
         READWRITE(hashPrev);
         READWRITE(hashMerkleRoot);
         READWRITE(nTime);
@@ -382,6 +400,7 @@ public:
     {
         CBlockHeader block;
         block.nVersion        = nVersion;
+	block.nDustVote       = nDustVote;
         block.hashPrevBlock   = hashPrev;
         block.hashMerkleRoot  = hashMerkleRoot;
         block.nTime           = nTime;
@@ -407,7 +426,69 @@ class CChain {
 private:
     std::vector<CBlockIndex*> vChain;
 
+    // ==== the output value counter stuff has to be here because it is 
+    //      an attribute of every chain (every different tip of every fork 
+    //      has to maintain their own unspent output/values counts).
+
+    // this is the Tip of this chain as far as the output value counter stuff (below)
+    // is aware of. 
+    //CBlockIndex* vOutputValueSyncLastTip;
+
+    // the outer vector represents the 2-year checkpoints and counts the number of 
+    // accounts (UTXOs) that have a value in the [2^N, 2^(N+1)) range, where N is 
+    // the index in the inner vector. The inner vector is a balance count table,
+    // and the outer vector tells us what table applies RIGHT AFTER the checkpoint
+    // it indicates has been taken.
+    // the first element of the outer vector is the balance count just after 
+    // two whole years of blocks (excluding the "genesis block" aka "block #0") 
+    // have been processed (i.e. 144*365*2 blocks = 105,120 blocks, counting the 
+    // utxos pending in the balance intervals for blocks #1 to #105,120).
+    //
+    // the count is a signed int so we can detect when we fucked up (i.e. 
+    // negative counts) and we don't need a gazillion utxos anyway, ever.
+    //std::vector<std::vector<int64_t> > vOutputValueCounts;
+
+    // this is the min spendable value for every completed period. 
+    // when a period ends (e.g. 2 years of block headers connected)
+    // we scan all of the block headers and tally the votes for what 
+    // dust value applies to the snapshot and hence to the next 2 years
+    // of blocks, and we cache that value here.
+    //
+    // e.g. entry 0 contains the minimum spendable utxo value starting from
+    //  block 105,121 inclusive, for utxo's of transactions present in blocks
+    //  105,120 or earlier.
+    // the older the utxo is, the more two-year snapshotting events it crosses,
+    //  and the more minimum spendable amounts (entries on this vector) it has
+    //  to check on its path to this chain's tip (or tip+1 actually if it's a 
+    //  block we are still trying to connect, which is probably the only case 
+    //  that makes sense afaict).
+    //
+    std::vector<CAmount> vMinSpendableOutputValues;
+
 public:
+
+    // Mark output value counts as synchronized with the current vChain tip
+    // If you're lying when you call this, then the resulting bug will be rather
+    //  difficult to spot.
+    //void MarkOutputValueCountsSynchronized() { vOutputValueSyncLastTip = Tip(); }
+
+    // register a new UTXO (one connect-block transaction's output, or a disconnect-block 
+    //   tx that was spending an output)
+    // the height is the height of the block or snapshot with the output; if a snapshot, the
+    //   output's age is very much probably older
+    // fLast = if this is the last call you're making with a given nblockheight
+    //void AddUnspentOutputValue(const CAmount& nOutputValue, uint64_t nBlockHeight, bool fLast);
+
+    // erase an UTXO (one diconnect-block transaction's output, or an output that was spent)
+    //void RemoveUnspentOutputValue(const CAmount& nOutputValue, uint64_t nBlockHeight);
+
+    // get what's the minimum value an output of given height (of the block the transaction 
+    //  of this output ORIGINALLY appeared in this chain) has to have to be spendable 
+    //  (non-pruned due to the max UTXO entry limit at snapshotting time) in a given 
+    //  "next block" height at this chain (i.e. this->height()+1), aka the block 
+    //  that would want to host the input for that output.
+    CAmount GetMinSpendableOutputValue(uint64_t nInputBlockHeight, uint64_t nOutputBlockHeight);
+    
     /** Returns the index entry for the genesis block of this chain, or NULL if none. */
     CBlockIndex *Genesis() const {
         return vChain.size() > 0 ? vChain[0] : NULL;

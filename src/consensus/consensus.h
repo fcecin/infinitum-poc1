@@ -7,18 +7,12 @@
 #define INFINITUM_CONSENSUS_CONSENSUS_H
 
 /** The maximum allowed size for a serialized block, in bytes (network rule) */
-// Infinitum: Hmm actually 4 MB is less risky than 10MB.
-//
-// From http://gavinandresen.ninja/utxo-uhoh:
-// "Worst case UTXO storage for 20MB blocks is about one terabyte per year"
-// For 4MB that's 200GB. That's enough of a hassle even with yearly
-// snapshotting.
-static const unsigned int MAX_BLOCK_SIZE = 4000000;
+static const unsigned int MAX_BLOCK_SIZE = 1000000;
 
 /** The maximum allowed number of signature check operations in a block (network rule) */
 static const unsigned int MAX_BLOCK_SIGOPS = MAX_BLOCK_SIZE/50;
 /** Coinbase transaction outputs can only be spent after this number of new blocks (network rule) */
-static const int COINBASE_MATURITY = 100;
+static const int COINBASE_MATURITY = 1;
 
 /** Flags for nSequence and nLockTime locks */
 enum {

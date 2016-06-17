@@ -732,21 +732,31 @@ bool CheckFinalTx(const CTransaction &tx, int flags)
 
 int NumSnapshotsBetween(int nOutputHeight, int nInputHeight)
 {
-  int nOutputYear = nOutputHeight / SNAPSHOTTING_INTERVAL_NUM_BLOCKS;
-  int nInputYear = nInputHeight / SNAPSHOTTING_INTERVAL_NUM_BLOCKS;
+  assert(nOutputHeight > 0);
+  assert(nInputHeight > 0);
+  assert(nOutputHeight <= nInputHeight);
+
+  int nOutputYear = (nOutputHeight - 1) / SNAPSHOTTING_INTERVAL_NUM_BLOCKS;
+  int nInputYear = (nInputHeight - 1) / SNAPSHOTTING_INTERVAL_NUM_BLOCKS;
   return nInputYear - nOutputYear;
 }
 
 bool TooManySnapshotsBetween(int nOutputHeight, int nInputHeight)
 {
-  return NumSnapshotsBetween(nOutputHeight, nInputHeight) > TRANSACTION_INACTIVITY_EXPIRED_YEARS;
+  return NumSnapshotsBetween(nOutputHeight, nInputHeight) > TRANSACTION_INACTIVITY_EXPIRED_SNAPSHOTS;
 }
 
 bool IsInactivityExpired(const CCoinsViewCache &view, const CTransaction &tx, int nBlockHeight)
 {
   for (size_t j = 0; j < tx.vin.size(); j++) {
-    int nCoinHeight = view.AccessCoins(tx.vin[j].prevout.hash)->nHeight;
+    //int nCoinHeight = view.AccessCoins(tx.vin[j].prevout.hash)->nHeight;
+    const COutPoint &prevout = tx.vin[j].prevout;
+    const CCoins *pCoins = view.AccessCoins(prevout.hash);
+    int64_t nCoinHeight = pCoins->nHeight;
     if (TooManySnapshotsBetween(nCoinHeight, nBlockHeight))
+      return true;
+    CAmount nCoinValue = pCoins->vout[prevout.n].nValue;
+    if (chainActive.GetMinSpendableOutputValue(nBlockHeight, nCoinHeight) > nCoinValue)
       return true;
   }
   return false;
@@ -1193,6 +1203,7 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
         }
 
 	// Infinitum:: check for abandoned old inputs that are unspendable here.
+	/*
 	int nHeight = GetHeight();
 	BOOST_FOREACH(const CTxIn &txin, tx.vin) {
             const CCoins *coins = view.AccessCoins(txin.prevout.hash);
@@ -1203,6 +1214,38 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
                                            hash.ToString()));
 	    }
 	}
+	*/
+	    // Infinitum:: check for the side effects of the biennial snapshotting rule: 
+	    //  logically pruning unspent outputs (even if we still have them).
+	    int nHeight = GetHeight();
+            for (size_t j = 0; j < tx.vin.size(); j++) {
+	        const COutPoint &prevout = tx.vin[j].prevout;
+	        const CCoins *pCoins = view.AccessCoins(prevout.hash);
+	        int64_t nCoinHeight = pCoins->nHeight;
+		// Infinitum: check for abandoned old inputs that are unspendable here.
+	        if (TooManySnapshotsBetween(nCoinHeight, nHeight)) {
+		  //return state.DoS(100, error("ConnectBlock(): expired inputs"),
+                  //                 REJECT_INVALID, "bad-txns-inputs-expired");
+	      return state.DoS(10, false,
+                                 REJECT_INVALID, "bad-txns-inputs-expired", false,
+                                 strprintf("%s spends an inactivity-expired transaction output",
+                                           hash.ToString()));
+		}
+		// Infinitum: check for inputs that have been pruned in any of the snapshotting
+		//   events crossed between the output in the block/transaction that funded them
+		//   and the current candidate new block that's trying to consume it.
+		// The threshold for each biennial purge is voted in the block headers (nDustVote).
+		CAmount nCoinValue = pCoins->vout[prevout.n].nValue;
+	        if (chainActive.GetMinSpendableOutputValue(nHeight, nCoinHeight) > nCoinValue) {
+		  //return state.DoS(100, error("ConnectBlock(): dust inputs pruned"),
+                  //                 REJECT_INVALID, "bad-txns-inputs-pruned-dust");
+	      return state.DoS(10, false,
+                                 REJECT_INVALID, "bad-txns-inputs-pruned-dust", false,
+                                 strprintf("%s spends a pruned-dust transaction output",
+                                           hash.ToString()));
+		}
+            }
+
 
         CTxMemPoolEntry entry(tx, nFees, GetTime(), dPriority, chainActive.Height(), pool.HasNoInputsOf(tx), inChainInputValue, fSpendsCoinbase, nSigOps, lp);
         unsigned int nSize = entry.GetTxSize();
@@ -1591,14 +1634,16 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus
     return true;
 }
 
-CAmount GetBlockSubsidy(unsigned int nBits, const Consensus::Params& consensusParams)
+CAmount GetBlockSubsidy(unsigned int nBits, uint64_t nHeight, const Consensus::Params& consensusParams)
 {
   // Reward of a block is COIN plus 16 satoshis (">>4") per difficulty of that block. 
   arith_uint256 nTarget, nMaximumTarget;
   nTarget.SetCompact(nBits);
   nMaximumTarget.SetCompact(0x1d00ffff);
   arith_uint256 nDiffSatoshis = nMaximumTarget / (nTarget >> 4);
-  CAmount nSubsidy = COIN + nDiffSatoshis.GetLow64();
+  CAmount nSubsidy = nHeight * COIN + nDiffSatoshis.GetLow64();
+  //CAmount nSubsidy = 1 * COIN + nDiffSatoshis.GetLow64();
+  // Infinitum:: FIXME: the reward is 16000000 (0.16 COIN), sounds better
   return nSubsidy;
 }
 
@@ -2408,8 +2453,28 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                                      REJECT_INVALID, "bad-blk-sigops");
             }
 
+	    // Infinitum:: check for the side effects of the biennial snapshotting rule: 
+	    //  logically pruning unspent outputs (even if we still have them).
+            for (size_t j = 0; j < tx.vin.size(); j++) {
+	        const COutPoint &prevout = tx.vin[j].prevout;
+	        const CCoins *pCoins = view.AccessCoins(prevout.hash);
+	        int64_t nCoinHeight = pCoins->nHeight;
+		// Infinitum: check for abandoned old inputs that are unspendable here.
+	        if (TooManySnapshotsBetween(nCoinHeight, pindex->nHeight)) {
+		  return state.DoS(100, error("ConnectBlock(): expired inputs"),
+                                   REJECT_INVALID, "bad-txns-inputs-expired");
+		}
+		// Infinitum: check for inputs that have been pruned in any of the snapshotting
+		//   events crossed between the output in the block/transaction that funded them
+		//   and the current candidate new block that's trying to consume it.
+		// The threshold for each biennial purge is voted in the block headers (nDustVote).
+		CAmount nCoinValue = pCoins->vout[prevout.n].nValue;
+	        if (chainActive.GetMinSpendableOutputValue(pindex->nHeight, nCoinHeight) > nCoinValue) {
+		  return state.DoS(100, error("ConnectBlock(): dust inputs pruned"),
+                                   REJECT_INVALID, "bad-txns-inputs-pruned-dust");
+		}
+            }
 
-	    // Infinitum: also check for abandoned old inputs that are unspendable here.
             for (size_t j = 0; j < tx.vin.size(); j++) {
 	        int nCoinHeight = view.AccessCoins(tx.vin[j].prevout.hash)->nHeight;
 	        if (TooManySnapshotsBetween(nCoinHeight, pindex->nHeight)) {
@@ -2441,7 +2506,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     int64_t nTime3 = GetTimeMicros(); nTimeConnect += nTime3 - nTime2;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime3 - nTime2), 0.001 * (nTime3 - nTime2) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime3 - nTime2) / (nInputs-1), nTimeConnect * 0.000001);
 
-    CAmount blockReward = nFees + GetBlockSubsidy(pindex->nBits, chainparams.GetConsensus());
+    CAmount blockReward = nFees + GetBlockSubsidy(pindex->nBits, pindex->nHeight, chainparams.GetConsensus());
 
     if (block.vtx[0].GetValueOut() > blockReward)
         return state.DoS(100,
@@ -2479,6 +2544,10 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     if (fTxIndex)
         if (!pblocktree->WriteTxIndex(vPos))
             return AbortNode(state, "Failed to write transaction index");
+
+    // Infinitum:: FIXME REMOVEME DEBUG
+    printf("Connectblock just added: dustvote=%u, pindex height=%i\n", block.nDustVote, pindex->nHeight);
+
 
     // add this block to the view's block chain
     view.SetBestBlock(pindex->GetBlockHash());
@@ -3567,6 +3636,11 @@ static bool IsSuperMajority(int minVersion, const CBlockIndex* pstart, unsigned 
 
 bool ProcessNewBlock(CValidationState& state, const CChainParams& chainparams, const CNode* pfrom, const CBlock* pblock, bool fForceProcessing, const CDiskBlockPos* dbp)
 {
+  if (pblock->nDustVote != 30) {
+    printf("naaaaaaaaaaoooooo tia!\n");
+    exit(0);
+  }
+
     {
         LOCK(cs_main);
         bool fRequested = MarkBlockAsReceived(pblock->GetHash());

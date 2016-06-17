@@ -320,7 +320,7 @@ CBlockPolicyEstimator::CBlockPolicyEstimator(const CFeeRate& _minRelayFee)
     priStats.Initialize(vprilist, MAX_BLOCK_CONFIRMS, DEFAULT_DECAY, "Priority");
 
     feeUnlikely = CFeeRate(0);
-    feeLikely = CFeeRate(INF_FEERATE);
+    feeLikely = CFeeRate(MAX_MONEY);//Infinitum:: fix (INF_FEERATE);
     priUnlikely = 0;
     priLikely = INF_PRIORITY;
 }
@@ -462,7 +462,7 @@ void CBlockPolicyEstimator::processBlock(unsigned int nBlockHeight,
 
     double feeLikelyEst = feeStats.EstimateMedianVal(2, SUFFICIENT_FEETXS, MIN_SUCCESS_PCT, true, nBlockHeight);
     if (feeLikelyEst == -1)
-        feeLikely = CFeeRate(INF_FEERATE);
+      feeLikely = CFeeRate(MAX_MONEY);//Infinitum:: fix (INF_FEERATE);
     else
         feeLikely = CFeeRate(feeLikelyEst);
 

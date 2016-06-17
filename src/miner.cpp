@@ -228,6 +228,8 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
 
 	    // Infinitum:: don't mine  transactions that have, as inputs, any outputs that
 	    //   are more than 10 years old (inactivity-expired coins).
+	    // AND ALSO NOW we check for the biennial snapshot dust pruning
+	    // (FIXME: update the function name)
 	    if (IsInactivityExpired(view, tx, nHeight))
 	        continue;
 
@@ -287,10 +289,13 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
 	unsigned int nNextWorkRequired = GetNextWorkRequired(pindexPrev, pblock, chainparams.GetConsensus());
 	
         // Compute final coinbase transaction.
-        txNew.vout[0].nValue = nFees + GetBlockSubsidy(nNextWorkRequired, chainparams.GetConsensus());
+        txNew.vout[0].nValue = nFees + GetBlockSubsidy(nNextWorkRequired, nHeight, chainparams.GetConsensus());
         txNew.vin[0].scriptSig = CScript() << nHeight << OP_0;
         pblock->vtx[0] = txNew;
         pblocktemplate->vTxFees[0] = -nFees;
+
+	// Infinitum:: FIXME/REMOVEME hacking in the dust vote for testing
+	pblock->nDustVote = 30;  // 2^30 = 10.73 COIN
 
         // Fill in header
         pblock->hashPrevBlock  = pindexPrev->GetBlockHash();

@@ -42,12 +42,6 @@ class CValidationState;
 struct CNodeStateStats;
 struct LockPoints;
 
-// Infinitum:: size of the block "snapshotting year," in blocks
-static const int64_t SNAPSHOTTING_INTERVAL_NUM_BLOCKS = 20; // FIXME: change to 52,560 (1 year)
-// Infinitum:: number of "snapshotting years" (minimum) an unspent output will not be
-//   considered inactive and expired and hence unspendable.
-static const int64_t TRANSACTION_INACTIVITY_EXPIRED_YEARS = 10;
-
 /** Default for DEFAULT_WHITELISTRELAY. */
 static const bool DEFAULT_WHITELISTRELAY = true;
 /** Default for DEFAULT_WHITELISTFORCERELAY. */
@@ -266,7 +260,7 @@ bool GetTransaction(const uint256 &hash, CTransaction &tx, const Consensus::Para
 /** Find the best known block, and make it the tip of the block chain */
 bool ActivateBestChain(CValidationState& state, const CChainParams& chainparams, const CBlock* pblock = NULL);
 // Infinitum: block subsidy is a function of the block's difficulty (nBits) instead of block height
-CAmount GetBlockSubsidy(unsigned int nBits, const Consensus::Params& consensusParams);
+CAmount GetBlockSubsidy(unsigned int nBits, uint64_t nHeight, const Consensus::Params& consensusParams);
 
 /**
  * Prune block and undo files (blk???.dat and undo???.dat) so that the disk space used is less than a user-defined target.

@@ -206,6 +206,7 @@ public:
      */
     int GetDepthInMainChain(const CBlockIndex* &pindexRet) const;
     int GetDepthInMainChain() const { const CBlockIndex *pindexRet; return GetDepthInMainChain(pindexRet); }
+    uint64_t  GetHeightInMainChainOrTipHeight() const; // Infinitum:: get the height of this transaction in the active chain
     bool IsInMainChain() const { const CBlockIndex *pindexRet; return GetDepthInMainChain(pindexRet) > 0; }
     int GetBlocksToMaturity() const;
     /** Pass this transaction to the mempool. Fails if absolute fee exceeds absurd fee. */
@@ -783,18 +784,20 @@ public:
     CAmount GetAccountBalance(CWalletDB& walletdb, const std::string& strAccount, int nMinDepth, const isminefilter& filter);
     std::set<CTxDestination> GetAccountAddresses(const std::string& strAccount) const;
 
+    bool IsSnapshotDustPruned(const CTxOut& txout, uint64_t nCoinHeight) const; // Infinitum:: our txout values are sensitive to block height
     isminetype IsMine(const CTxIn& txin) const;
     CAmount GetDebit(const CTxIn& txin, const isminefilter& filter) const;
     isminetype IsMine(const CTxOut& txout) const;
-    CAmount GetCredit(const CTxOut& txout, const isminefilter& filter) const;
+    CAmount GetCredit(const CTxOut& txout, uint64_t nCoinHeight, const isminefilter& filter) const; // Infinitum:: our txout values are sensitive to block height
     bool IsChange(const CTxOut& txout) const;
-    CAmount GetChange(const CTxOut& txout) const;
+    CAmount GetChange(const CTxOut& txout, uint64_t nCoinHeight) const; // Infinitum:: our txout values are sensitive to block height
+
     bool IsMine(const CTransaction& tx) const;
     /** should probably be renamed to IsRelevantToMe */
     bool IsFromMe(const CTransaction& tx) const;
     CAmount GetDebit(const CTransaction& tx, const isminefilter& filter) const;
-    CAmount GetCredit(const CTransaction& tx, const isminefilter& filter) const;
-    CAmount GetChange(const CTransaction& tx) const;
+    CAmount GetCredit(const CTransaction& tx, uint64_t nCoinHeight, const isminefilter& filter) const; // Infinitum:: our txout values are sensitive to block height
+    CAmount GetChange(const CTransaction& tx, uint64_t nCoinHeight) const; // Infinitum:: our txout values are sensitive to block height
     void SetBestChain(const CBlockLocator& loc);
 
     DBErrors LoadWallet(bool& fFirstRunRet);
