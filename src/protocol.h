@@ -217,6 +217,12 @@ extern const char *SENDHEADERS;
  * @since protocol version 70013 as described by BIP133
  */
 extern const char *FEEFILTER;
+/**
+ * Infinitum:: analogous to a BLOCK message, but for pieces of a snapshot file.
+ *  has the same byte format as the BLOCK message. snapshot pieces are 1MB in size,
+ *  except for the last piece that may have as little as 1 byte in it.
+ */
+extern const char *SSHOTPIECE;
 };
 
 /* Get a vector of all valid message types (see above) */
@@ -314,6 +320,8 @@ enum {
     // Nodes may always request a MSG_FILTERED_BLOCK in a getdata, however,
     // MSG_FILTERED_BLOCK should not appear in any invs except as a part of getdata.
     MSG_FILTERED_BLOCK,
+    // Infinitum:: requesting of a snapshot piece
+    MSG_SNAPSHOT_PIECE
 };
 
 #endif // INFINITUM_PROTOCOL_H

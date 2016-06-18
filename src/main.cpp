@@ -4534,6 +4534,11 @@ bool static AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
         }
     case MSG_BLOCK:
         return mapBlockIndex.count(inv.hash);
+
+    // Infinitum:: TODO: implement snapshotting
+    case MSG_SNAPSHOT_PIECE:
+        return false; // by definition we don't have it yet
+
     }
     // Don't know what it is, just say we already got one
     return true;
@@ -4557,7 +4562,11 @@ void static ProcessGetData(CNode* pfrom, const Consensus::Params& consensusParam
             boost::this_thread::interruption_point();
             it++;
 
-            if (inv.type == MSG_BLOCK || inv.type == MSG_FILTERED_BLOCK)
+	    // Infinitum:: TODO: implement snapshotting
+	    if (inv.type == MSG_SNAPSHOT_PIECE) {
+	      continue; //   completely ignore getdata for snapshot pieces for now
+	    } 
+	    else if (inv.type == MSG_BLOCK || inv.type == MSG_FILTERED_BLOCK)
             {
                 bool send = false;
                 BlockMap::iterator mi = mapBlockIndex.find(inv.hash);
@@ -4948,6 +4957,12 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             const CInv &inv = vInv[nInv];
 
             boost::this_thread::interruption_point();
+	    
+	    // Infinitum:: TODO: implement snapshotting
+	    //   for now we completely (100%) drop, ignore inventory messages for snapshot pieces
+	    if (inv.type == MSG_SNAPSHOT_PIECE)
+	      continue;
+
             pfrom->AddInventoryKnown(inv);
 
             bool fAlreadyHave = AlreadyHave(inv);
@@ -4976,6 +4991,14 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                     LogPrint("net", "getheaders (%d) %s to peer=%d\n", pindexBestHeader->nHeight, inv.hash.ToString(), pfrom->id);
                 }
             }
+	    else if (inv.type == MSG_SNAPSHOT_PIECE) {
+	      
+	      // Infinitum:: TODO: implement snapshotting
+	      // this IF is probably in the right place because a snapshot piece is, 
+	      //  essentially, a kind of block for all intents and purposes (they are
+	      //  interchangeable).
+	      
+	    }
             else
             {
                 if (fBlocksOnly)
@@ -5595,6 +5618,13 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             LogPrint("net", "received: feefilter of %s from peer=%d\n", CFeeRate(newFeeFilter).ToString(), pfrom->id);
         }
     }
+
+    // Infinitum:: TODO: implement the snapshotting feature
+    else if (strCommand == NetMsgType::SSHOTPIECE) {
+
+      LogPrint("net", "received: sshotpiece message from peer=%d\n", pfrom->id);
+    }
+
 
     else {
         // Ignore unknown commands for extensibility

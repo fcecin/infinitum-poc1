@@ -35,6 +35,7 @@ const char *FILTERCLEAR="filterclear";
 const char *REJECT="reject";
 const char *SENDHEADERS="sendheaders";
 const char *FEEFILTER="feefilter";
+const char *SSHOTPIECE="sshotpiece"; // Infinitum::
 };
 
 static const char* ppszTypeName[] =
@@ -42,7 +43,8 @@ static const char* ppszTypeName[] =
     "ERROR", // Should never occur
     NetMsgType::TX,
     NetMsgType::BLOCK,
-    "filtered block" // Should never occur
+    "filtered block", // Should never occur
+    NetMsgType::SSHOTPIECE   // Infinitum:: inventory is some snapshot piece's header
 };
 
 /** All known message types. Keep this in the same order as the list of
@@ -70,7 +72,8 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::FILTERCLEAR,
     NetMsgType::REJECT,
     NetMsgType::SENDHEADERS,
-    NetMsgType::FEEFILTER
+    NetMsgType::FEEFILTER,
+    NetMsgType::SSHOTPIECE // Infinitum::
 };
 const static std::vector<std::string> allNetMessageTypesVec(allNetMessageTypes, allNetMessageTypes+ARRAYLEN(allNetMessageTypes));
 
