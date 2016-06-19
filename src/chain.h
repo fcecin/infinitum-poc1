@@ -14,15 +14,12 @@
 
 #include <vector>
 
-// Infinitum:: 2^63-1 maximum balance for an unspent output (it's signed)
-//#define UTXO_BALANCE_COUNT_SIZE 63
 // Infinitum:: size of the block "snapshotting year," in blocks
-static const int64_t SNAPSHOTTING_INTERVAL_NUM_BLOCKS = 4; // FIXME: change to 105,120 (2 years)
+static const int64_t SNAPSHOTTING_INTERVAL_NUM_BLOCKS = 105120; // FIXME: change to 105,120 (2 years)
+
 // Infinitum:: number of "snapshotting years" (minimum) an unspent output will not be
 //   considered inactive and expired and hence unspendable. the "year" is actually two years
-static const int64_t TRANSACTION_INACTIVITY_EXPIRED_SNAPSHOTS = 10;
-// Infinitum:: maximum number of unspent outputs (UTXOs) on a snapshot / snapshotting event
-//static const int64_t MAX_SNAPSHOT_UTXO_COUNT = 10000000000; // One for every person on this planet and then some
+static const int64_t TRANSACTION_INACTIVITY_EXPIRED_SNAPSHOTS = 10; // all UTXOs expire in (20, 22] years
 
 
 class CBlockFileInfo

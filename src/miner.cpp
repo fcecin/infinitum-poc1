@@ -294,8 +294,8 @@ CBlockTemplate* CreateNewBlock(const CChainParams& chainparams, const CScript& s
         pblock->vtx[0] = txNew;
         pblocktemplate->vTxFees[0] = -nFees;
 
-	// Infinitum:: FIXME/REMOVEME hacking in the dust vote for testing
-	pblock->nDustVote = 30;  // 2^30 = 10.73 COIN
+	// Infinitum:: here you can hack the dust vote for testing
+	pblock->nDustVote = 0; //30;  // 2^30 = 10.73 COIN
 
         // Fill in header
         pblock->hashPrevBlock  = pindexPrev->GetBlockHash();

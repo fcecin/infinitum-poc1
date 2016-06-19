@@ -105,7 +105,7 @@ static CBlock CreateGenesisBlock(uint64_t nTime, uint32_t nNonce, uint32_t nBits
   return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
 
-void ParallelFindGenesis(uint64_t nTime, int nSliceIndex, int nSliceCount)
+void ParallelFindGenesis(uint64_t nTime, uint32_t nDiffBits, uint32_t nMinZeroes, int nSliceIndex, int nSliceCount)
 {
   uint32_t nNonce = 0;
   //uint64_t nTime = 1464970680; // this was the old one
@@ -114,8 +114,9 @@ void ParallelFindGenesis(uint64_t nTime, int nSliceIndex, int nSliceCount)
   nTime += nSliceIndex;
   
   // create version 4 block, why not?
-  CBlock genesis = CreateGenesisBlock(nTime, nNonce, 0x1d00ffff, 4, 50 * COIN);
+  CBlock genesis = CreateGenesisBlock(nTime, nNonce, nDiffBits, 4, 50 * COIN);
   
+  printf("slice %i: minzeroes: %u diffbits: %u\n", nSliceIndex, nMinZeroes, nDiffBits);
   printf("slice %i: genesis hash merkle root: %s\n", nSliceIndex, genesis.hashMerkleRoot.GetHex().c_str());
 
   int64_t nTimeStart = GetTimeMicros();
@@ -135,7 +136,7 @@ void ParallelFindGenesis(uint64_t nTime, int nSliceIndex, int nSliceCount)
     if (nzeroes > nbest)
       nbest = nzeroes;
 	  
-    if (nzeroes >= 35) {
+    if (nzeroes >= nMinZeroes) {
       printf("slice %i: found hash with hbpos %u\n", nSliceIndex, nzeroes);
       printf("slice %i: nonce %u time %lu\n", nSliceIndex, nNonce, nTime);
       printf("slice %i: hash is %s\n", nSliceIndex, hash.GetHex().c_str());
@@ -189,12 +190,22 @@ public:
         //consensus.BIP34Height = 227931;
         //consensus.BIP34Hash = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8");
 
-	//Infinitum: FIXME: remove the bogus pow limit when done testing
-	//consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-	consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        
-	consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
+	//Infinitum:: FIXME: remove the bogus pow limit when done testing
+	consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+	//consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+
+
+	//consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
+	// Infinitum:: our "digishield" difficulty-adjustment parameters
+	// FIXME: rename to "averaging target timespan"
+	consensus.nPowAveragingInterval = 50; // blocks
+	consensus.nPowAveragingTimespan = consensus.nPowAveragingInterval * consensus.nPowTargetSpacing; // 50*600?
+	consensus.nMaxAdjustUp = 8;
+	consensus.nMaxAdjustDown = 16;
+
+
+
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
@@ -228,24 +239,26 @@ public:
 	//assert(consensus.hashGenesisBlock == uint256S("0x000000001089cece8d126e1d5143c9b7923f3cdb4b28cc693d1ff69433509974"));
         //assert(genesis.hashMerkleRoot == uint256S("0xcced355ef228053f585b932df1efce18555dd4e10fc6a46a2a59beaf2c6e319a"));
 
+	
 	// new one w/ 64 bit time and 32 bit dustvote
 	genesis = CreateGenesisBlock(1466021007, 1758599628, 0x1d00ffff, 4, 50 * COIN);
 	consensus.hashGenesisBlock = genesis.GetHash();
 	assert(consensus.hashGenesisBlock == uint256S("0x0000000017f8b3b12bc95ddbd3d2d697cb0ee2264679fc134eb5cba378c3c617"));
         assert(genesis.hashMerkleRoot == uint256S("0x3ead46f2ceecbf038949782d43e244d301f965fb43d94dc5cd048265083f8980"));
 
+
+        //genesis = CreateGenesisBlock(1296688602, 2, 0x207fffff, 1, 50 * COIN);
 	/*
 
 	// This code mines a genesis block.
 	static const int nSliceCount = 4;
 	boost::thread *pThread;
 	for (int i=0; i<nSliceCount; ++i) {
-	  pThread = new boost::thread(ParallelFindGenesis, 1466021000, i, nSliceCount);
+	  pThread = new boost::thread(ParallelFindGenesis, 1466296446, 0x1d00ffff, 32, i, nSliceCount);
 	}
 	pThread->join();
 
 	*/
-	
 	
 	
 	// we don't have DNS seeds
@@ -314,8 +327,25 @@ public:
         //consensus.BIP34Height = 21111;
         //consensus.BIP34Hash = uint256S("0x0000000023b3a96d3484e5abb3755c413e7d41500f8e2a5c3f0dd01299cd8ef8");
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
+
+
+        //consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
+        //consensus.nPowTargetSpacing = 10 * 60;
+	//
+	//
+	//
+	//
+	//consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
+	// Infinitum:: our "digishield" difficulty-adjustment parameters
+	// FIXME: rename to "averaging target timespan"
+	consensus.nPowAveragingInterval = 50; // blocks
+	consensus.nPowAveragingTimespan = consensus.nPowAveragingInterval * consensus.nPowTargetSpacing; // 50*600?
+	consensus.nMaxAdjustUp = 8;
+	consensus.nMaxAdjustDown = 16;
+
+
+
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
@@ -343,9 +373,10 @@ public:
         //assert(consensus.hashGenesisBlock == uint256S("0x000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"));
         //assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
 	// new one w/ 64 bit time and 32 bit dustvote
-	genesis = CreateGenesisBlock(1466021007, 1758599628, 0x1d00ffff, 4, 50 * COIN);
+	//
+	genesis = CreateGenesisBlock(1466296449, 287122693, 0x1d00ffff, 4, 50 * COIN);
 	consensus.hashGenesisBlock = genesis.GetHash();
-	assert(consensus.hashGenesisBlock == uint256S("0x0000000017f8b3b12bc95ddbd3d2d697cb0ee2264679fc134eb5cba378c3c617"));
+	assert(consensus.hashGenesisBlock == uint256S("0x00000000ecb6b4eb948a8a1397fc9a0fc0b62520f3e40bd763c554c98fdf55cb"));
         assert(genesis.hashMerkleRoot == uint256S("0x3ead46f2ceecbf038949782d43e244d301f965fb43d94dc5cd048265083f8980"));
 
         vFixedSeeds.clear();
@@ -360,7 +391,8 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = boost::assign::list_of(0x04)(0x35)(0x87)(0xCF).convert_to_container<std::vector<unsigned char> >();
         base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x04)(0x35)(0x83)(0x94).convert_to_container<std::vector<unsigned char> >();
 
-        vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
+	// ??..
+        //vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
 
         fMiningRequiresPeers = true;
         fDefaultConsistencyChecks = false;
@@ -394,8 +426,25 @@ public:
         //consensus.BIP34Height = -1; // BIP34 has not necessarily activated on regtest
         //consensus.BIP34Hash = uint256();
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
+
+
+        //consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
+        //consensus.nPowTargetSpacing = 10 * 60;
+	//
+	//
+	//
+	//
+	//consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
+	// Infinitum:: our "digishield" difficulty-adjustment parameters
+	// FIXME: rename to "averaging target timespan"
+	consensus.nPowAveragingInterval = 50; // blocks
+	consensus.nPowAveragingTimespan = consensus.nPowAveragingInterval * consensus.nPowTargetSpacing; // 50*600?
+	consensus.nMaxAdjustUp = 8;
+	consensus.nMaxAdjustDown = 16;
+
+
+
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = true;
         consensus.nRuleChangeActivationThreshold = 108; // 75% for testchains
@@ -414,16 +463,16 @@ public:
         nDefaultPort = 18444;
         nPruneAfterHeight = 1000;
 
-	//// Infinitum:: FIXME:: GENERATE A CUSTOM GENESIS BLOCK
-	//
         //genesis = CreateGenesisBlock(1296688602, 2, 0x207fffff, 1, 50 * COIN);
         //consensus.hashGenesisBlock = genesis.GetHash();
         //assert(consensus.hashGenesisBlock == uint256S("0x0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206"));
         //assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
 	// new one w/ 64 bit time and 32 bit dustvote
-	genesis = CreateGenesisBlock(1466021007, 1758599628, 0x1d00ffff, 4, 50 * COIN);
+	//
+	// Infinitum:: not tested yet, hopefully works
+	genesis = CreateGenesisBlock(1466021002, 4452, 0x207fffff, 4, 50 * COIN);
 	consensus.hashGenesisBlock = genesis.GetHash();
-	assert(consensus.hashGenesisBlock == uint256S("0x0000000017f8b3b12bc95ddbd3d2d697cb0ee2264679fc134eb5cba378c3c617"));
+	assert(consensus.hashGenesisBlock == uint256S("0x0000ebe86c0ca83e02a6af347466e9359811093c2c4435f6df96f8996ae4808c"));
         assert(genesis.hashMerkleRoot == uint256S("0x3ead46f2ceecbf038949782d43e244d301f965fb43d94dc5cd048265083f8980"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.

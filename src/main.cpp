@@ -1636,14 +1636,13 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus
 
 CAmount GetBlockSubsidy(unsigned int nBits, uint64_t nHeight, const Consensus::Params& consensusParams)
 {
-  // Reward of a block is COIN plus 16 satoshis (">>4") per difficulty of that block. 
+  // Infinitum:: block reward is COIN plus 16 satoshis (">>4") per difficulty of that block. 
   arith_uint256 nTarget, nMaximumTarget;
   nTarget.SetCompact(nBits);
   nMaximumTarget.SetCompact(0x1d00ffff);
   arith_uint256 nDiffSatoshis = nMaximumTarget / (nTarget >> 4);
-  CAmount nSubsidy = nHeight * COIN + nDiffSatoshis.GetLow64();
-  //CAmount nSubsidy = 1 * COIN + nDiffSatoshis.GetLow64();
-  // Infinitum:: FIXME: the reward is 16000000 (0.16 COIN), sounds better
+  CAmount nSubsidy = nDiffSatoshis.GetLow64();
+  //CAmount nSubsidy = nHeight * COIN + nDiffSatoshis.GetLow64(); // testing only
   return nSubsidy;
 }
 
@@ -2544,10 +2543,6 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     if (fTxIndex)
         if (!pblocktree->WriteTxIndex(vPos))
             return AbortNode(state, "Failed to write transaction index");
-
-    // Infinitum:: FIXME REMOVEME DEBUG
-    printf("Connectblock just added: dustvote=%u, pindex height=%i\n", block.nDustVote, pindex->nHeight);
-
 
     // add this block to the view's block chain
     view.SetBestBlock(pindex->GetBlockHash());
@@ -3636,11 +3631,6 @@ static bool IsSuperMajority(int minVersion, const CBlockIndex* pstart, unsigned 
 
 bool ProcessNewBlock(CValidationState& state, const CChainParams& chainparams, const CNode* pfrom, const CBlock* pblock, bool fForceProcessing, const CDiskBlockPos* dbp)
 {
-  if (pblock->nDustVote != 30) {
-    printf("naaaaaaaaaaoooooo tia!\n");
-    exit(0);
-  }
-
     {
         LOCK(cs_main);
         bool fRequested = MarkBlockAsReceived(pblock->GetHash());
